@@ -5,90 +5,63 @@ using System.Xml;
 using System.Xml.Serialization;
 using System.Linq;
 using System.Xml.Linq;
+using System.Collections.Generic;
 
 namespace XMLParser {
     class Program {
-        private static void PrintValues(DataSet dataSet, string label) {
-            Console.WriteLine("\n" + label);
-            foreach (DataTable table in dataSet.Tables) {
-                Console.WriteLine("TableName: " + table.TableName);
-                foreach (DataRow row in table.Rows) {
-                    foreach (DataColumn column in table.Columns) {
-                        Console.Write("\table " + row[column]);
-                    }
-                    Console.WriteLine();
-                }
-            }
-        }
-
-        public static void WriteDataToFile(DataTable dataTable, string filePath, string delimiter) {
-            int i = 0;
-            StreamWriter sw = new StreamWriter(filePath, false);
-            for (i = 0; i < dataTable.Columns.Count - 1; i++) {
-                sw.Write(dataTable.Columns[i].ColumnName + delimiter);
-            }
-            sw.Write(dataTable.Columns[i].ColumnName);
-            sw.WriteLine();
-            foreach (DataRow row in dataTable.Rows) {
-                object[] itemsArray = row.ItemArray;
-                for (i = 0; i < itemsArray.Length - 1; i++) {
-                    sw.Write(itemsArray[i].ToString() + delimiter);
-                }
-                sw.Write(itemsArray[i].ToString());
-                sw.WriteLine();
-            }
-            sw.Close();
-        }
-
-        public static void WriteDataSetToFile(DataSet ds, string filePath, string delimiter) {
-            StreamWriter sw = new StreamWriter(filePath, false);
-            foreach (DataTable table in ds.Tables) {
-                for (int i = 0; i < table.Columns.Count; ++i)
-                    sw.Write(delimiter + table.Columns[i].ColumnName.Substring(0, Math.Min(6, table.Columns[i].ColumnName.Length)));
-                sw.WriteLine();
-                foreach (var row in table.AsEnumerable()) {
-                    for (int i = 0; i < table.Columns.Count; ++i) {
-                        sw.Write(delimiter + row[i]);
-                    }
-                    sw.WriteLine();
-                }
-            }
-            sw.Close();
-        }
+        static string InputDirectory = "";
+        static string ResultDirectory = "";
 
         static void Main(string[] args) {
-            string inputFile = @"C:\Users\msbz\Desktop\xml_PSP\[20180315_TRANSACTION_Publish.xml";
-            string saveFile = @"C:\Users\msbz\Desktop\xml_PSP\20180315_TRANSACTION_Publish_res_";
-
-            using (StreamReader sr = new StreamReader(inputFile)) {
-                XElement booksFromFile = XElement.Load(sr);
-                Console.WriteLine(booksFromFile);
+            Console.WriteLine("Please specify the path to the folder with xml files:");
+            InputDirectory = Console.ReadLine();
+            if (!InputDirectory.Contains("\\")) {
+                Console.WriteLine("----------------------------------------------------------------");
+                Console.WriteLine("Task failed.");
+                Console.ReadKey();
+                return;
             }
-
-
-
-
-            /*
-            DataSet ds = new DataSet();
-            using (StreamReader sr = new StreamReader(inputFile)) {
-                XmlReader xmlFile = XmlReader.Create(sr);
-                ds.ReadXml(xmlFile);
+            ResultDirectory = InputDirectory + "\\Result\\";
+            Directory.CreateDirectory(ResultDirectory);
+            string[] files = Directory.GetFiles(InputDirectory);
+            Console.WriteLine( );
+            Console.WriteLine("----------------------------------------------------------------");
+            foreach (var item in files) {
+                var ext = Path.GetExtension(item);
+                if(ext == ".txt" || ext == ".xml") {
+                    try {
+                        ParseXML(item);
+                        Console.WriteLine(Path.GetFileName(item) + " - done");
+                    } catch (Exception) {
+                        Console.WriteLine(Path.GetFileName(item) + " - error");
+                    }
+                }
             }
-            
-            Console.WriteLine("Parse completed");
+            Console.WriteLine("----------------------------------------------------------------");
+            Console.WriteLine("Task complited.");
+            Console.ReadKey();
+        }
 
-
-            //PrintValues(ds, "Merged With table.");
-            //WriteDataToFile(ds.Tables[0], saveFile + i + ".txt", "\t");
-            int i = 0;
-            foreach (DataTable item in ds.Tables) {
-                WriteDataToFile(item, saveFile + ++i + ".txt", "\t");
-                Console.WriteLine($"Columnns: {ds.Tables[0].Columns.Count}\nRows: { ds.Tables[0].Rows.Count}");
-                Console.WriteLine("Data saved to file");
+        private static void ParseXML(string path) {
+            XmlDocument doc = new XmlDocument();
+            var xml = File.ReadAllText(path);
+            doc.LoadXml(xml);
+            string subDataType = doc.SelectSingleNode("ScdImportData/MetaData/SubDataType").InnerText;
+            XmlNode root = doc.SelectSingleNode("ScdImportData/ScdData/" + subDataType);
+            List<string> headers = new List<string>();
+            List<string> content = new List<string>();
+            List<string> result = new List<string>();
+            if (root.HasChildNodes) {
+                for (int i = 0; i < root.ChildNodes.Count; i++) {
+                    headers.Add(root.ChildNodes[i].Name);
+                }
+                result.Add(string.Join(";", headers));
+                for (int i = 0; i < root.ChildNodes.Count; i++) {
+                    content.Add(root.ChildNodes[i].InnerText);
+                }
             }
-            
-            //WriteDataSetToFile(ds, saveFile + ".txt", "\t");
-            */
+            result.Add(string.Join(";", content));
+            File.WriteAllLines(ResultDirectory + Path.GetFileNameWithoutExtension(path) + ".txt", result);
         }
     }
 }
