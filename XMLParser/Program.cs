@@ -24,11 +24,11 @@ namespace XMLParser {
             ResultDirectory = InputDirectory + "\\Result\\";
             Directory.CreateDirectory(ResultDirectory);
             string[] files = Directory.GetFiles(InputDirectory);
-            Console.WriteLine( );
+            Console.WriteLine();
             Console.WriteLine("----------------------------------------------------------------");
             foreach (var item in files) {
                 var ext = Path.GetExtension(item);
-                if(ext == ".txt" || ext == ".xml") {
+                if (ext == ".txt" || ext == ".xml") {
                     try {
                         ParseXML(item);
                         Console.WriteLine(Path.GetFileName(item) + " - done");
@@ -49,18 +49,16 @@ namespace XMLParser {
             string subDataType = doc.SelectSingleNode("ScdImportData/MetaData/SubDataType").InnerText;
             XmlNode root = doc.SelectSingleNode("ScdImportData/ScdData/" + subDataType);
             List<string> headers = new List<string>();
-            List<string> content = new List<string>();
+            List<string> data = new List<string>();
             List<string> result = new List<string>();
             if (root.HasChildNodes) {
                 for (int i = 0; i < root.ChildNodes.Count; i++) {
                     headers.Add(root.ChildNodes[i].Name);
+                    data.Add(root.ChildNodes[i].InnerText);
                 }
                 result.Add(string.Join(";", headers));
-                for (int i = 0; i < root.ChildNodes.Count; i++) {
-                    content.Add(root.ChildNodes[i].InnerText);
-                }
+                result.Add(string.Join(";", data));
             }
-            result.Add(string.Join(";", content));
             File.WriteAllLines(ResultDirectory + Path.GetFileNameWithoutExtension(path) + ".txt", result);
         }
     }
