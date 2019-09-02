@@ -22,11 +22,15 @@ namespace XMLParser {
                 Console.ReadKey();
                 return;
             }
-            ResultDirectory = InputDirectory + "\\Result\\";
-            Directory.CreateDirectory(ResultDirectory);
             string[] files = Directory.GetFiles(InputDirectory);
             Console.WriteLine();
             Console.WriteLine("----------------------------------------------------------------");
+            if (files.Any()) {
+                ResultDirectory = InputDirectory + "\\Result\\";
+                Directory.CreateDirectory(ResultDirectory);
+            }else {
+                Console.WriteLine("No files found in the specified folder.");
+            }
             foreach (var item in files) {
                 var ext = Path.GetExtension(item);
                 if (ext == ".txt" || ext == ".xml") {
