@@ -15,7 +15,8 @@ namespace XMLParser {
         static void Main(string[] args) {
             Console.WriteLine("Please specify the path to the folder with xml files:");
             InputDirectory = Console.ReadLine();
-            if (!InputDirectory.Contains("\\")) {
+            if (!Directory.Exists(InputDirectory)) {
+                Console.WriteLine("Could not find the specified folder.");
                 Console.WriteLine("----------------------------------------------------------------");
                 Console.WriteLine("Task failed.");
                 Console.ReadKey();
