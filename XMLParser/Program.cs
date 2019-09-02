@@ -40,6 +40,8 @@ namespace XMLParser {
                     } catch (Exception) {
                         Console.WriteLine(Path.GetFileName(item) + " - error");
                     }
+                }else {
+                    Console.WriteLine(Path.GetFileName(item) + " - extension not supported");
                 }
             }
             Console.WriteLine("----------------------------------------------------------------");
