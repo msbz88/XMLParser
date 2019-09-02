@@ -42,12 +42,12 @@ namespace XMLParser {
             Console.ReadKey();
         }
 
-        private static void ParseXML(string path) {
-            XmlDocument doc = new XmlDocument();
-            var xml = File.ReadAllText(path);
-            doc.LoadXml(xml);
-            string subDataType = doc.SelectSingleNode("ScdImportData/MetaData/SubDataType").InnerText;
-            XmlNode root = doc.SelectSingleNode("ScdImportData/ScdData/" + subDataType);
+        private static void ParseXML(string path) {          
+            var fileContent = File.ReadAllText(path);
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.LoadXml(fileContent);
+            string subDataType = xmlDoc.SelectSingleNode("ScdImportData/MetaData/SubDataType").InnerText;
+            XmlNode root = xmlDoc.SelectSingleNode("ScdImportData/ScdData/" + subDataType);
             List<string> headers = new List<string>();
             List<string> data = new List<string>();
             List<string> result = new List<string>();
