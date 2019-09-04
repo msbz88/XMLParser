@@ -28,7 +28,7 @@ namespace XMLParser {
             if (files.Any()) {
                 ResultDirectory = InputDirectory + "\\Result\\";
                 Directory.CreateDirectory(ResultDirectory);
-            }else {
+            } else {
                 Console.WriteLine("No files found in the specified folder.");
             }
             foreach (var item in files) {
@@ -40,7 +40,7 @@ namespace XMLParser {
                     } catch (Exception) {
                         Console.WriteLine(Path.GetFileName(item) + " - error");
                     }
-                }else {
+                } else {
                     Console.WriteLine(Path.GetFileName(item) + " - extension not supported");
                 }
             }
@@ -49,24 +49,34 @@ namespace XMLParser {
             Console.ReadKey();
         }
 
-        private static void ParseXML(string path) {          
+        private static void ParseXML(string path) {
             var fileContent = File.ReadAllText(path);
             XmlDocument xmlDoc = new XmlDocument();
             xmlDoc.LoadXml(fileContent);
             string subDataType = xmlDoc.SelectSingleNode("ScdImportData/MetaData/SubDataType").InnerText;
-            XmlNode root = xmlDoc.SelectSingleNode("ScdImportData/ScdData/" + subDataType);
+            var nodes = xmlDoc.SelectNodes("ScdImportData/ScdData/" + subDataType);
             List<string> headers = new List<string>();
             List<string> data = new List<string>();
             List<string> result = new List<string>();
-            if (root.HasChildNodes) {
-                for (int i = 0; i < root.ChildNodes.Count; i++) {
-                    headers.Add(root.ChildNodes[i].Name);
-                    data.Add(root.ChildNodes[i].InnerText);
+            if (nodes.Count > 0) {
+                var firstNode = nodes[0];
+                if (firstNode.HasChildNodes) {
+                    for (int i = 0; i < firstNode.ChildNodes.Count; i++) {
+                        headers.Add(firstNode.ChildNodes[i].Name);
+                    }
+                    result.Add(string.Join(";", headers));
                 }
-                result.Add(string.Join(";", headers));
-                result.Add(string.Join(";", data));
+                foreach (XmlNode node in nodes) {
+                    data.Clear();
+                    if (node.HasChildNodes) {
+                        for (int i = 0; i < node.ChildNodes.Count; i++) {
+                            data.Add(node.ChildNodes[i].InnerText);
+                        }
+                        result.Add(string.Join(";", data));
+                    }
+                }
+                File.WriteAllLines(ResultDirectory + Path.GetFileNameWithoutExtension(path) + ".txt", result);
             }
-            File.WriteAllLines(ResultDirectory + Path.GetFileNameWithoutExtension(path) + ".txt", result);
         }
     }
 }
